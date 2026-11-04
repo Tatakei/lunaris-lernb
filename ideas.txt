@@ -1,0 +1,26 @@
+### Lunaris Development & Feature Ideas
+
+#### Core System & UX
+- **User Dashboard:** A summary view on the Home page showing recent edits, total budget spent, and "Word of the Day" from the Lexikon.
+
+#### Lexikon (Knowledge Base)
+- **Flashcard Mode:** A simple study tool using Lexikon entries (Active Recall/Spaced Repetition).
+- **Auto-linking:** Automatically highlight and link words in Markdown files that exist as entries in the Lexikon.
+- **Images in Lexikon:** Allow uploading or linking images to definitions. [DONE]
+
+#### Markdown Docs & Modules
+- **Graph View:** A visual map showing connections between different documentation files and modules.
+- **Export to PDF:** Use a library like `puppeteer` or `jsPDF` to export modules/docs for printing or sharing.
+- **Version History:** Simple backup of Markdown files before editing to prevent accidental loss.
+- **Table of Contents:** Automatically generate a sidebar TOC for long Markdown files based on headers.
+
+#### Budget Tracker
+- **Budget Categories & Limits:** Set monthly or project-based spending limits and track progress with a progress bar.
+- **Receipt Upload:** Allow attaching images of receipts to bought items.
+- **Currency Converter:** Real-time conversion if buying items in non-CHF currencies.
+- **Shopping List Export:** Generate a simple text or PDF list of "Planned" items for easy reference.
+
+#### Technical Improvements
+- **Automated Backups:** A script or endpoint to zip the `lexikon.db` and `assets` folder regularly.
+- **Unit Tests:** Add tests for the server-side scraping logic and file sanitization to ensure reliability.
+- **Environment Config:** Use a proper `.env` system for ports and directory paths (already partially started with `config.ts`).
