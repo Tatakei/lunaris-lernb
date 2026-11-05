@@ -38,6 +38,11 @@ const router = createRouter({
       path: '/oe',
       name: 'oe',
       component: () => import('../views/OEView.vue')
+    },
+    {
+      path: '/dtr-ebook',
+      name: 'dtr-ebook',
+      component: () => import('../views/DTREbookView.vue')
     }
   ]
 })

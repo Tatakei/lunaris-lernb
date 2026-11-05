@@ -265,6 +265,11 @@ const toggleModuleDropdown = () => {
               <span class="nav-icon">💵</span>
               <span class="nav-label">Shop Tracker</span>
             </RouterLink>
+            <RouterLink to="/dtr-ebook" class="nav-item" :class="{ active: isActive('/dtr-ebook') }" @click="closeMobile">
+              <span class="nav-icon">📚</span>
+              <span class="nav-label">DTR eBook</span>
+            </RouterLink>
+
             <RouterLink to="/oe" class="nav-item" :class="{ active: isActive('/oe') }" @click="closeMobile">
               <span class="nav-icon">🛠️</span>
               <span class="nav-label">OE</span>
