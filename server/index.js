@@ -52,6 +52,10 @@ const port = process.env.PORT || 3001;
 app.get('/api/stats', async (req, res) => {
   try {
     const lexikonCount = db.prepare('SELECT COUNT(*) as count FROM lexikon').get().count;
+    let dtrNotesCount = 0;
+    try {
+      dtrNotesCount = db.prepare('SELECT COUNT(*) as count FROM dtr_notes').get().count;
+    } catch {}
     
     const countMdFiles = async (dir) => {
       if (!fs.existsSync(dir)) return 0;
@@ -64,7 +68,8 @@ app.get('/api/stats', async (req, res) => {
     
     res.json({
       lexikon: lexikonCount,
-      documents: docsCount + modulesCount
+      documents: docsCount + modulesCount,
+      dtrNotes: dtrNotesCount
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -107,6 +112,18 @@ db.exec(`
     quantity INTEGER DEFAULT 1,
     category TEXT DEFAULT 'Allgemein',
     bought INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS dtr_notes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    points REAL,
+    max_points REAL,
+    grade REAL NOT NULL,
+    weight REAL DEFAULT 1.0,
+    date TEXT,
+    comment TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 `);
@@ -452,6 +469,120 @@ app.delete('/api/budget/:id', (req, res) => {
       return res.status(404).json({ error: 'Eintrag nicht gefunden' });
     }
     res.json({ message: 'Eintrag gelöscht', id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Helper for Swiss grade calculation: Note = (Punkte / MaxPunkte) * 5 + 1
+function calculateSwissGrade(points, maxPoints) {
+  if (points === undefined || points === null || maxPoints === undefined || maxPoints === null) {
+    return null;
+  }
+  const pts = Number(points);
+  const max = Number(maxPoints);
+  if (isNaN(pts) || isNaN(max) || max <= 0) {
+    return null;
+  }
+  const calculated = (pts / max) * 5 + 1;
+  const clamped = Math.max(1, Math.min(6, calculated));
+  return Math.round(clamped * 100) / 100;
+}
+
+// DTR Notes API routes
+app.get('/api/dtr/notes', (req, res) => {
+  try {
+    const notes = db.prepare('SELECT * FROM dtr_notes ORDER BY date DESC, id DESC').all();
+    res.json(notes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/dtr/notes', (req, res) => {
+  const { title, points, max_points, grade, weight, date, comment } = req.body;
+  if (!title || !String(title).trim()) {
+    return res.status(400).json({ error: 'Titel ist erforderlich' });
+  }
+
+  let finalGrade = grade !== undefined && grade !== null && grade !== '' ? Number(grade) : null;
+  const numPoints = points !== undefined && points !== null && points !== '' ? Number(points) : null;
+  const numMaxPoints = max_points !== undefined && max_points !== null && max_points !== '' ? Number(max_points) : null;
+
+  if (numPoints !== null && numMaxPoints !== null && numMaxPoints > 0) {
+    finalGrade = calculateSwissGrade(numPoints, numMaxPoints);
+  }
+
+  if (finalGrade === null || isNaN(finalGrade)) {
+    return res.status(400).json({ error: 'Gültige Note oder Punkte/Maximalpunkte erforderlich' });
+  }
+
+  const numWeight = weight !== undefined && weight !== null && weight !== '' ? Number(weight) : 1.0;
+  const dateStr = date || new Date().toISOString().split('T')[0];
+  const commentStr = comment || '';
+
+  try {
+    const insert = db.prepare(`
+      INSERT INTO dtr_notes (title, points, max_points, grade, weight, date, comment)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    const result = insert.run(String(title).trim(), numPoints, numMaxPoints, finalGrade, numWeight, dateStr, commentStr);
+    const newNote = db.prepare('SELECT * FROM dtr_notes WHERE id = ?').get(result.lastInsertRowid);
+    res.status(201).json(newNote);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/dtr/notes/:id', (req, res) => {
+  const { id } = req.params;
+  const { title, points, max_points, grade, weight, date, comment } = req.body;
+
+  if (!title || !String(title).trim()) {
+    return res.status(400).json({ error: 'Titel ist erforderlich' });
+  }
+
+  let finalGrade = grade !== undefined && grade !== null && grade !== '' ? Number(grade) : null;
+  const numPoints = points !== undefined && points !== null && points !== '' ? Number(points) : null;
+  const numMaxPoints = max_points !== undefined && max_points !== null && max_points !== '' ? Number(max_points) : null;
+
+  if (numPoints !== null && numMaxPoints !== null && numMaxPoints > 0) {
+    finalGrade = calculateSwissGrade(numPoints, numMaxPoints);
+  }
+
+  if (finalGrade === null || isNaN(finalGrade)) {
+    return res.status(400).json({ error: 'Gültige Note oder Punkte/Maximalpunkte erforderlich' });
+  }
+
+  const numWeight = weight !== undefined && weight !== null && weight !== '' ? Number(weight) : 1.0;
+  const dateStr = date || new Date().toISOString().split('T')[0];
+  const commentStr = comment || '';
+
+  try {
+    const update = db.prepare(`
+      UPDATE dtr_notes
+      SET title = ?, points = ?, max_points = ?, grade = ?, weight = ?, date = ?, comment = ?
+      WHERE id = ?
+    `);
+    const result = update.run(String(title).trim(), numPoints, numMaxPoints, finalGrade, numWeight, dateStr, commentStr, id);
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Note nicht gefunden' });
+    }
+    const updatedNote = db.prepare('SELECT * FROM dtr_notes WHERE id = ?').get(id);
+    res.json(updatedNote);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/dtr/notes/:id', (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = db.prepare('DELETE FROM dtr_notes WHERE id = ?').run(id);
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Note nicht gefunden' });
+    }
+    res.json({ message: 'Note gelöscht', id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

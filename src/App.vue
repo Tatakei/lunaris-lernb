@@ -228,6 +228,11 @@ const toggleModuleDropdown = () => {
               <span v-if="lexikonEntries.length" class="nav-count">{{ lexikonEntries.length }}</span>
             </RouterLink>
 
+            <RouterLink to="/dtr" class="nav-item" :class="{ active: isActive('/dtr') }" @click="closeMobile">
+              <span class="nav-icon">📊</span>
+              <span class="nav-label">DTR</span>
+            </RouterLink>
+
             <RouterLink to="/docs" class="nav-item" :class="{ active: isActive('/docs') || route.path.startsWith('/docs/') }" @click="closeMobile">
               <span class="nav-icon">📄</span>
               <span class="nav-label">Dokumente</span>
@@ -265,6 +270,11 @@ const toggleModuleDropdown = () => {
               <span class="nav-icon">💵</span>
               <span class="nav-label">Shop Tracker</span>
             </RouterLink>
+            <RouterLink to="/dtr-ebook" class="nav-item" :class="{ active: isActive('/dtr-ebook') }" @click="closeMobile">
+              <span class="nav-icon">📚</span>
+              <span class="nav-label">DTR eBook</span>
+            </RouterLink>
+
             <RouterLink to="/oe" class="nav-item" :class="{ active: isActive('/oe') }" @click="closeMobile">
               <span class="nav-icon">🛠️</span>
               <span class="nav-label">OE</span>

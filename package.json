@@ -8,9 +8,9 @@
     "server": "node server/index.js",
     "start": "run-p dev server",
     "serve": "node server/index.js",
-    "start:prod": "npm run build && node server/index.js",
+    "start:prod": "npm run build && run-p preview server",
     "build": "run-p type-check \"build-only {@}\" --",
-    "preview": "vite preview",
+    "preview": "vite preview --host --port 5173",
     "build-only": "vite build",
     "type-check": "vue-tsc --build"
   },

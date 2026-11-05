@@ -15,6 +15,11 @@ const router = createRouter({
       component: () => import('../views/Lexikon.vue')
     },
     {
+      path: '/dtr',
+      name: 'dtr',
+      component: () => import('../views/DTRView.vue')
+    },
+    {
       path: '/module/:id',
       name: 'module',
       component: () => import('../views/ModuleView.vue')
@@ -38,6 +43,11 @@ const router = createRouter({
       path: '/oe',
       name: 'oe',
       component: () => import('../views/OEView.vue')
+    },
+    {
+      path: '/dtr-ebook',
+      name: 'dtr-ebook',
+      component: () => import('../views/DTREbookView.vue')
     }
   ]
 })

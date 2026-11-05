@@ -294,6 +294,8 @@ const handleImageUpload = async (event: Event, target: 'new' | 'edit') => {
   if (!input.files || input.files.length === 0) return
 
   const file = input.files[0]
+  if (!file) return
+
   const formData = new FormData()
   formData.append('image', file)
 
@@ -316,6 +318,10 @@ const handleImageUpload = async (event: Event, target: 'new' | 'edit') => {
     console.error('Error uploading image:', error)
     alert('Netzwerkfehler beim Bild-Upload.')
   }
+}
+
+const openImage = (url: string) => {
+  window.open(url, '_blank')
 }
 
 const updateEntry = async () => {
@@ -731,7 +737,7 @@ onMounted(() => {
               </td>
               <td class="image-cell">
                 <div v-if="entry.image" class="entry-image">
-                  <img :src="API_BASE + entry.image" :alt="entry.word" @click="window.open(API_BASE + entry.image, '_blank')" />
+                  <img :src="API_BASE + entry.image" :alt="entry.word" @click="openImage(API_BASE + entry.image)" />
                 </div>
                 <span v-else class="empty-cell-dash">-</span>
               </td>

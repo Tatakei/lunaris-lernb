@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
 import { API_BASE } from '@/config'
 
 const stats = ref({
   lexikon: 0,
-  documents: 0
+  documents: 0,
+  dtrNotes: 0
 })
 const isLoading = ref(true)
 
@@ -32,23 +34,32 @@ onMounted(fetchStats)
     </div>
 
     <div class="stats-grid">
-      <div class="stat-card">
+      <RouterLink to="/lexikon" class="stat-card">
         <div class="stat-icon lexikon-icon">📖</div>
         <div class="stat-info">
           <span class="stat-label">Fachbegriffe im Lexikon</span>
           <span v-if="isLoading" class="stat-value loading">...</span>
           <span v-else class="stat-value">{{ stats.lexikon }}</span>
         </div>
-      </div>
+      </RouterLink>
 
-      <div class="stat-card">
+      <RouterLink to="/dtr" class="stat-card">
+        <div class="stat-icon dtr-icon">📊</div>
+        <div class="stat-info">
+          <span class="stat-label">DTR Notenverwaltung</span>
+          <span v-if="isLoading" class="stat-value loading">...</span>
+          <span v-else class="stat-value">{{ stats.dtrNotes ?? 0 }}</span>
+        </div>
+      </RouterLink>
+
+      <RouterLink to="/docs" class="stat-card">
         <div class="stat-icon docs-icon">📄</div>
         <div class="stat-info">
           <span class="stat-label">Verfügbare Dokumente</span>
           <span v-if="isLoading" class="stat-value loading">...</span>
           <span v-else class="stat-value">{{ stats.documents }}</span>
         </div>
-      </div>
+      </RouterLink>
     </div>
   </div>
 </template>
@@ -92,6 +103,7 @@ onMounted(fetchStats)
   gap: 1.5rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   border: 1px solid #f1f5f9;
+  text-decoration: none;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -108,10 +120,15 @@ onMounted(fetchStats)
   align-items: center;
   justify-content: center;
   font-size: 1.75rem;
+  flex-shrink: 0;
 }
 
 .lexikon-icon {
   background-color: rgba(99, 102, 241, 0.1);
+}
+
+.dtr-icon {
+  background-color: rgba(14, 165, 233, 0.1);
 }
 
 .docs-icon {
