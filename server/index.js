@@ -56,6 +56,11 @@ app.get('/api/stats', async (req, res) => {
     try {
       dtrNotesCount = db.prepare('SELECT COUNT(*) as count FROM dtr_notes').get().count;
     } catch {}
+
+    let wissenstestCount = 0;
+    try {
+      wissenstestCount = db.prepare('SELECT COUNT(*) as count FROM wissenstest_questions').get().count;
+    } catch {}
     
     const countMdFiles = async (dir) => {
       if (!fs.existsSync(dir)) return 0;
@@ -69,7 +74,8 @@ app.get('/api/stats', async (req, res) => {
     res.json({
       lexikon: lexikonCount,
       documents: docsCount + modulesCount,
-      dtrNotes: dtrNotesCount
+      dtrNotes: dtrNotesCount,
+      wissenstest: wissenstestCount
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -126,6 +132,15 @@ db.exec(`
     comment TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS wissenstest_questions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    category TEXT DEFAULT 'Allgemein',
+    difficulty TEXT DEFAULT 'Mittel',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `);
 
 // Migration to ensure 'number' column exists in existing tables
@@ -156,6 +171,27 @@ if (count === 0) {
   insert.run('Cryo-Schlaf', 'Ein Zustand künstlich herbeigeführten Winterschlafs für Langzeit-Raumflüge.', 'M102');
   insert.run('Dunkle Energie', 'Eine hypothetische Form von Energie, die für die beschleunigte Expansion des Universums verantwortlich gemacht wird.', 'M103');
   insert.run('Event-Horizont', 'Die Grenze um ein Schwarzes Loch, hinter der kein Licht entkommen kann.', 'M103');
+}
+
+// Seed initial Wissenstest questions if empty
+const wissenstestQuestionsCount = db.prepare('SELECT COUNT(*) as count FROM wissenstest_questions').get().count;
+if (wissenstestQuestionsCount === 0) {
+  const insertQuestion = db.prepare('INSERT INTO wissenstest_questions (question, answer, category, difficulty) VALUES (?, ?, ?, ?)');
+  insertQuestion.run('Was versteht man unter Astro-Navigation?', 'Die Kunst der Orientierung anhand von Sternkonstellationen im interstellaren Raum.', 'Astronomie', 'Einfach');
+  insertQuestion.run('Was ist baryonische Materie?', 'Die sichtbare Materie im Universum, bestehend aus Protonen und Neutronen.', 'Physik', 'Mittel');
+  insertQuestion.run('Was bezweckt ein Cryo-Schlaf bei Raumflügen?', 'Einen Zustand künstlich herbeigeführten Winterschlafs für Langzeit-Raumflüge.', 'Technologie', 'Einfach');
+  insertQuestion.run('Welche Rolle spielt Dunkle Energie im Kosmos?', 'Sie ist eine hypothetische Form von Energie, die für die beschleunigte Expansion des Universums verantwortlich gemacht wird.', 'Physik', 'Schwer');
+  insertQuestion.run('Was ist der Event-Horizont eines Schwarzen Lochs?', 'Die Grenze um ein Schwarzes Loch, hinter der kein Licht oder Signal entkommen kann.', 'Astronomie', 'Mittel');
+  insertQuestion.run('Was bedeutet die Abkürzung DTR?', 'Daten- und Notenverwaltungssystem (Dokumentation, Tracking, Resultate).', 'Allgemein', 'Einfach');
+  insertQuestion.run('Wie lautet das Ohmsche Gesetz?', 'U = R * I (Spannung = Widerstand mal Stromstärke).', 'Elektrotechnik', 'Einfach');
+  insertQuestion.run('Was ist der Unterschied zwischen RAM und ROM?', 'RAM ist flüchtiger Arbeitsspeicher für laufende Prozesse, ROM ist nicht-flüchtiger Festwertspeicher.', 'Informatik', 'Mittel');
+  insertQuestion.run('Was bewirkt die Gravitation nach Einsteins Allgemeiner Relativitätstheorie?', 'Die Krümmung von Raum und Zeit durch Masse und Energie.', 'Physik', 'Schwer');
+  insertQuestion.run('Was ist eine IP-Adresse und wozu dient sie?', 'Eine eindeutige numerische oder alphanumerische Kennung für Geräte in einem Rechnernetzwerk zur Adressierung und Weiterleitung von Datenpaketen.', 'Informatik', 'Mittel');
+  insertQuestion.run('Was versteht man unter Redundanz in der Systemtechnik?', 'Das zusätzliche Vorhandensein funktionsgleicher Komponenten zur Erhöhung der Ausfallsicherheit.', 'Systemtechnik', 'Mittel');
+  insertQuestion.run('Was ist Lichtgeschwindigkeit im Vakuum (gerundeter Wert)?', 'Ca. 300.000 km/s (genau 299.792.458 m/s).', 'Physik', 'Einfach');
+  insertQuestion.run('Was ist der Unterschied zwischen TCP und UDP?', 'TCP ist verbindungsorientiert und garantiert fehlerfreie Übertragung, UDP ist verbindungslos und schneller bei möglicher Paketverlust-Toleranz.', 'Netzwerk', 'Mittel');
+  insertQuestion.run('Was beschreibt der Begriff Entropie in der Thermodynamik?', 'Ein Maß für die Unordnung bzw. die Zahl der Mikrozustände eines thermodynamischen Systems.', 'Physik', 'Schwer');
+  insertQuestion.run('Was ist ein Algorithmus?', 'Eine eindeutige, endliche Handlungsanweisung zur schrittweisen Lösung eines Problems oder einer Klasse von Problemen.', 'Informatik', 'Einfach');
 }
 
 // Routes
@@ -583,6 +619,102 @@ app.delete('/api/dtr/notes/:id', (req, res) => {
       return res.status(404).json({ error: 'Note nicht gefunden' });
     }
     res.json({ message: 'Note gelöscht', id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Wissenstest API routes
+app.get('/api/wissenstest', (req, res) => {
+  try {
+    const questions = db.prepare('SELECT * FROM wissenstest_questions ORDER BY id DESC').all();
+    res.json(questions);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/wissenstest/random', (req, res) => {
+  const count = parseInt(req.query.count, 10) || 5;
+  try {
+    const totalCount = db.prepare('SELECT COUNT(*) as count FROM wissenstest_questions').get().count;
+    const limit = Math.max(1, Math.min(count, totalCount || 1));
+    const randomQuestions = db.prepare('SELECT * FROM wissenstest_questions ORDER BY RANDOM() LIMIT ?').all(limit);
+    res.json({
+      totalInDatabase: totalCount,
+      count: randomQuestions.length,
+      questions: randomQuestions
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/wissenstest', (req, res) => {
+  const { question, answer, category, difficulty } = req.body;
+  if (!question || !answer) {
+    return res.status(400).json({ error: 'Frage und Antwort sind erforderlich' });
+  }
+
+  try {
+    const stmt = db.prepare(`
+      INSERT INTO wissenstest_questions (question, answer, category, difficulty)
+      VALUES (?, ?, ?, ?)
+    `);
+    const result = stmt.run(
+      String(question).trim(),
+      String(answer).trim(),
+      category ? String(category).trim() : 'Allgemein',
+      difficulty ? String(difficulty).trim() : 'Mittel'
+    );
+    const created = db.prepare('SELECT * FROM wissenstest_questions WHERE id = ?').get(result.lastInsertRowid);
+    res.status(201).json(created);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/wissenstest/:id', (req, res) => {
+  const { id } = req.params;
+  const { question, answer, category, difficulty } = req.body;
+
+  if (!question || !answer) {
+    return res.status(400).json({ error: 'Frage und Antwort sind erforderlich' });
+  }
+
+  try {
+    const existing = db.prepare('SELECT * FROM wissenstest_questions WHERE id = ?').get(id);
+    if (!existing) {
+      return res.status(404).json({ error: 'Frage nicht gefunden' });
+    }
+
+    db.prepare(`
+      UPDATE wissenstest_questions
+      SET question = ?, answer = ?, category = ?, difficulty = ?
+      WHERE id = ?
+    `).run(
+      String(question).trim(),
+      String(answer).trim(),
+      category !== undefined ? String(category).trim() : existing.category,
+      difficulty !== undefined ? String(difficulty).trim() : existing.difficulty,
+      id
+    );
+
+    const updated = db.prepare('SELECT * FROM wissenstest_questions WHERE id = ?').get(id);
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/wissenstest/:id', (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = db.prepare('DELETE FROM wissenstest_questions WHERE id = ?').run(id);
+    if (result.changes === 0) {
+      return res.status(404).json({ error: 'Frage nicht gefunden' });
+    }
+    res.json({ message: 'Frage gelöscht', id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -1,26 +1,179 @@
-### Lunaris Development & Feature Ideas
+# Lunaris - Feature-Ideen & Erweiterungsvorschläge (Roadmap)
 
-#### Core System & UX
-- **User Dashboard:** A summary view on the Home page showing recent edits, total budget spent, and "Word of the Day" from the Lexikon.
+Dieses Dokument enthält konkrete, durchdachte und priorisierte Feature-Vorschläge für die Weiterentwicklung der **Lunaris** Lernplattform, basierend auf einer vollständigen Analyse der aktuellen Codebasis (Vue 3 Frontend, Express/SQLite Backend, Markdown-System, Lexikon, DTR-Notenverwaltung und Budget).
 
-#### Lexikon (Knowledge Base)
-- **Flashcard Mode:** A simple study tool using Lexikon entries (Active Recall/Spaced Repetition).
-- **Auto-linking:** Automatically highlight and link words in Markdown files that exist as entries in the Lexikon.
-- **Images in Lexikon:** Allow uploading or linking images to definitions. [DONE]
+---
 
-#### Markdown Docs & Modules
-- **Graph View:** A visual map showing connections between different documentation files and modules.
-- **Export to PDF:** Use a library like `puppeteer` or `jsPDF` to export modules/docs for printing or sharing.
-- **Version History:** Simple backup of Markdown files before editing to prevent accidental loss.
-- **Table of Contents:** Automatically generate a sidebar TOC for long Markdown files based on headers.
+## 🎯 1. Lern- & Prüfungstools (Study & Learning Mode)
 
-#### Budget Tracker
-- **Budget Categories & Limits:** Set monthly or project-based spending limits and track progress with a progress bar.
-- **Receipt Upload:** Allow attaching images of receipts to bought items.
-- **Currency Converter:** Real-time conversion if buying items in non-CHF currencies.
-- **Shopping List Export:** Generate a simple text or PDF list of "Planned" items for easy reference.
+### 1.1 Spaced-Repetition Karteikarten-Modus (Flashcards)
+* **Konzept:** Verwandle das bestehende Lexikon und Modulnotizen in ein interaktives Lernkarten-System (Leitner-Prinzip / SM-2 Algorithmus).
+* **Funktionen:**
+  - Modi: "Begriff -> Definition" oder "Definition -> Begriff".
+  - Filter nach Modulen (z.B. nur M101–M103) oder Tags.
+  - Bewertungs-Buttons: *Nochmal*, *Schwer*, *Gut*, *Einfach*.
+  - Automatischer Lernplan basierend auf dem Wiederholungsintervall.
+  - Lernfortschritts- und Erfolgsstatistik im Dashboard.
 
-#### Technical Improvements
-- **Automated Backups:** A script or endpoint to zip the `lexikon.db` and `assets` folder regularly.
-- **Unit Tests:** Add tests for the server-side scraping logic and file sanitization to ensure reliability.
-- **Environment Config:** Use a proper `.env` system for ports and directory paths (already partially started with `config.ts`).
+### 1.2 Interaktiver Quiz- & Prüfungssimulator
+* **Konzept:** Generierung von Multiple-Choice- oder Freitext-Prüfungen aus dem Lexikon.
+* **Funktionen:**
+  - Zufällige Testläufe mit Zeitlimit (z. B. 15 Fragen in 10 Minuten).
+  - Sofortige Auswertung mit Erklärung und Verlinkung zum Lexikon-Eintrag.
+  - Speichern des Prüfungshistorie-Scores im Dashboard.
+
+### 1.3 Visueller Wissensgraph (Mindmap / Network Graph)
+* **Konzept:** Interaktive 2D-Netzwerk-Visualisierung (mit z.B. Cytoscape.js, vis-network oder D3).
+* **Funktionen:**
+  - Verknüpfung von Fachbegriffen über gemeinsame Tags, Modulnummern und Querverweise.
+  - Klick auf einen Knoten öffnet Detail-Modal oder die entsprechende Markdown-Dokumentation.
+  - Filterung nach Modulen zur Erkennung thematischer Zusammenhänge.
+
+### 1.4 Pomodoro-Lerntimer & Session-Tracker
+* **Konzept:** Integrierter Fokus-Timer in der Sidebar oder Header.
+* **Funktionen:**
+  - 25-Minuten Lernphase / 5-Minuten Pause (anpassbar).
+  - Zuordnung von Lernzeiten zu bestimmten Modulen (z. B. "2h gelernt für M201").
+  - Akustisches Signal oder Browser-Notification bei Pausenende.
+
+---
+
+## 📊 2. DTR & Notenverwaltung (Grade Management)
+
+### 2.1 Wunschnoten- & Prüfungssimulator (Target Grade Calculator)
+* **Konzept:** Berechnung erforderlicher Noten zur Erreichung eines Ziel-Notendurchschnitts.
+* **Funktionen:**
+  - Eingabe: "Ich möchte einen Gesamtschnitt von 5.2 erreichen. Welche Note brauche ich bei der nächsten Prüfung mit Gewichtung 2.0?".
+  - Visueller Indikator: Machbar / Ambitioniert / Mathematisch nicht mehr möglich.
+
+### 2.2 Semester- & Fächer-Strukturierung
+* **Konzept:** Aktuell ist DTR eine flache Notenliste; Erweiterung um Semester- und Fächergliederung.
+* **Funktionen:**
+  - Filter & Gruppierung nach Semester (1. bis 8. Semester) und Fachbereich/Modul.
+  - Berechnung separater Zwischen- und Jahreszeugnis-Notenschnitte.
+  - Visueller Notenverlauf über die Ausbildungsjahre (Chart.js / ApexCharts).
+
+### 2.3 Prüfungskalender & Countdown (Deadlines)
+* **Konzept:** Erfassung anstehender Prüfungstermine und Abgaben.
+* **Funktionen:**
+  - Kalenderansicht und Countdown-Widget ("Noch 4 Tage bis M102 Prüfung").
+  - Verknüpfung von Terminen mit entsprechenden Lexikon-Tags und Modul-Unterlagen.
+
+---
+
+## 📝 3. Markdown-System & Dokumentation
+
+### 3.1 Globale Volltextsuche (Global Search Command Palette)
+* **Konzept:** Zentrale Schnellsuche via `Strg + K` / `Cmd + K`.
+* **Funktionen:**
+  - Durchsucht gleichzeitig: Lexikon-Einträge, Markdown-Dokumente, Modul-Notizen, DTR-Einträge und Budget-Posten.
+  - Schnelle Tastaturnavigation mit Pfeiltasten und sofortige Vorschau.
+
+### 3.2 Erweiterte Markdown-Features
+* **Konzept:** Aufwertung des Markdown-Renderers und Editors für technische Ausbildungen.
+* **Funktionen:**
+  - **LaTeX / Formel-Support (KaTeX):** Mathematische und physikalische Formeln nativ im Markdown rendern (`$$ E = mc^2 $$`).
+  - **Mermaid.js Diagramme:** Ablaufdiagramme, Flussdiagramme und Sequenzdiagramme direkt per Markdown-Code zeichnen.
+  - **Wiki-Links / Internal Cross-References:** Automatische Verlinkung mit Syntax wie `[[Astro-Navigation]]` oder `[[M101]]` zum Lexikon.
+  - **Inhaltsverzeichnis (Auto Table of Contents):** Klickbares Inhaltsverzeichnis für lange Dokumente.
+  - **Bilder Drag & Drop im Editor:** Direkter Upload von Screenshots/Bildern per Paste/Drop in den Markdown-Editor.
+
+### 3.3 Versionsverlauf & Automatischer Entwurf-Speicher (Autosave & History)
+* **Konzept:** Schutz vor Datenverlust und Nachverfolgbarkeit von Änderungen.
+* **Funktionen:**
+  - Automatisches Zwischenspeichern alle 30 Sekunden im Hintergrund.
+  - Versionsverlauf mit Diff-Ansicht (Vergleich vorher/nachher) und Wiederherstellung alter Versionen.
+
+### 3.4 Dynamische Modulverwaltung
+* **Konzept:** Module nicht mehr fest im Frontend (r100-r400) verdrahten, sondern dynamisch verwalten.
+* **Funktionen:**
+  - Erstellen, Umbenennen und Umsortieren eigener Haupt- und Untermodule über die UI.
+  - Farb- und Icon-Auswahl für jedes Modul.
+
+---
+
+## 📋 4. OE-Checkliste & Aufgaben (Task & Workflow System)
+
+### 4.1 Persistenz & Datenbank-Anbindung
+* **Konzept:** Speicherung des Status in SQLite/LocalStorage statt Reset beim Neuladen.
+* **Funktionen:**
+  - Zustand bleibt dauerhaft erhalten; manueller "Zurücksetzen / Reset"-Button.
+  - Fortschrittsbalken ("3 / 5 erledigt - 60%").
+
+### 4.2 Individuelle Checklisten & Vorlagen (Templates)
+* **Konzept:** Eigene Checklisten erstellen und als Vorlage speichern.
+* **Funktionen:**
+  - Vorlagen für verschiedene Situationen (z. B. "Prüfungsvorbereitung", "Tagesstart", "Labor-Sicherheit", "Projekt-Release").
+  - Hinzufügen, Bearbeiten und Löschen eigener Checklisten-Punkte per UI.
+  - Zeitstempel für letzte Erledigung.
+
+---
+
+## 💰 5. Budget- & Materialverwaltung (Budget Enhancements)
+
+### 5.1 Ausgabenlimits & Budget-Ziele (Budget Targets)
+* **Konzept:** Festlegen eines Gesamtbudgets oder Monatsbudgets.
+* **Funktionen:**
+  - Optischer Fortschrittsbalken mit Warnfarbe bei Überschreitung (z. B. grün < 80%, gelb 80-99%, rot > 100%).
+  - Aufteilung des Budgets nach Kategorien mit Tortendiagramm.
+
+### 5.2 Beleg- & Quittungs-Upload
+* **Konzept:** Speichern von Rechnungen/Kaufbelegen direkt am Budget-Eintrag.
+* **Funktionen:**
+  - Upload von PDF- oder Bild-Quittungen zum gekauften Artikel.
+  - Vorschau-Modal für abgelegte Belege.
+
+### 5.3 CSV- / Excel-Export & Import
+* **Konzept:** Datenaustausch für Abrechnungen und Spesenberichte.
+* **Funktionen:**
+  - 1-Klick-Export der Budget-Tabelle als CSV oder Excel (.xlsx).
+  - Importfunktion für bestehende Einkaufslisten.
+
+---
+
+## 📖 6. eBook & PDF-Reader (Enhanced Reader Mode)
+
+### 6.1 Integrierter PDF-Reader mit Annotationen & Lesezeichen (PDF.js)
+* **Konzept:** Ersatz des einfachen `<iframe>` durch einen vollwertigen PDF-Viewer.
+* **Funktionen:**
+  - Text-Markierungen (Highlighter in verschiedenen Farben).
+  - Lesezeichen und zuletzt gelesene Seite automatisch speichern.
+  - Volltextsuche innerhalb des PDF-Dokuments.
+
+### 6.2 Split-Screen / Geteilte Ansicht (Dual Pane Mode)
+* **Konzept:** Gleichzeitiges Lesen des eBooks und Notizen-Schreiben.
+* **Funktionen:**
+  - Linke Bildschirmhälfte: PDF-Reader / Lexikon.
+  - Rechte Bildschirmhälfte: Markdown-Editor / Modul-Notizen.
+  - Anpassbare Splitter-Breite.
+
+### 6.3 PDF- & Dokumenten-Bibliothek
+* **Konzept:** Mehrere PDF-Handbücher und Lehrmittel hochladen und organisieren statt nur einer statischen PDF-Datei.
+
+---
+
+## ⚙️ 7. System, UI/UX & Technische Erweiterungen
+
+### 7.1 Dark Mode / Theme-Umschalter
+* **Konzept:** Umschalten zwischen Hell, Dunkel und System-Präferenz.
+* **Funktionen:**
+  - Vollständig angepasste Farbpalette für nächtliches Lernen mit CSS Variables.
+  - Persistierung in LocalStorage.
+
+### 7.2 Backup & Restore (Vollständige Datensicherung)
+* **Konzept:** Einfache Datensicherung für alle Benutzerdaten.
+* **Funktionen:**
+  - 1-Klick-Backup-Download: ZIP-Archiv mit SQLite-Datenbank, allen Markdown-Dateien und Uploads.
+  - Wiederherstellungs-Assistent (Restore) per Datei-Upload.
+
+### 7.3 Progressive Web App (PWA) & Offline-Modus
+* **Konzept:** Installation als Desktop- oder Mobile-App via Browser.
+* **Funktionen:**
+  - Vollwertige Offline-Nutzung aller gelernten Inhalte durch Service Worker.
+  - Schneller App-Start über Desktop-/Homescreen-Icon.
+
+### 7.4 Audio / Text-to-Speech & Diktierfunktion
+* **Konzept:** Barrierefreies Lernen und schnelles Notieren.
+* **Funktionen:**
+  - Vorlesefunktion (Web Speech API) für Lexikon-Definitionen.
+  - Spracheingabe für neue Lexikon-Einträge und Notizen.

@@ -266,6 +266,10 @@ const toggleModuleDropdown = () => {
 
           <div class="nav-section">
             <h3 class="nav-section-title">Werkzeuge</h3>
+            <RouterLink to="/wissenstest" class="nav-item" :class="{ active: isActive('/wissenstest') }" @click="closeMobile">
+              <span class="nav-icon">🧠</span>
+              <span class="nav-label">Wissenstest</span>
+            </RouterLink>
             <RouterLink to="/budget" class="nav-item" :class="{ active: isActive('/budget') }" @click="closeMobile">
               <span class="nav-icon">💵</span>
               <span class="nav-label">Shop Tracker</span>

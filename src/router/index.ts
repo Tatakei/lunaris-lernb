@@ -48,6 +48,11 @@ const router = createRouter({
       path: '/dtr-ebook',
       name: 'dtr-ebook',
       component: () => import('../views/DTREbookView.vue')
+    },
+    {
+      path: '/wissenstest',
+      name: 'wissenstest',
+      component: () => import('../views/WissenstestView.vue')
     }
   ]
 })

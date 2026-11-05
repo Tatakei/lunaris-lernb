@@ -6,7 +6,8 @@ import { API_BASE } from '@/config'
 const stats = ref({
   lexikon: 0,
   documents: 0,
-  dtrNotes: 0
+  dtrNotes: 0,
+  wissenstest: 0
 })
 const isLoading = ref(true)
 
@@ -58,6 +59,15 @@ onMounted(fetchStats)
           <span class="stat-label">Verfügbare Dokumente</span>
           <span v-if="isLoading" class="stat-value loading">...</span>
           <span v-else class="stat-value">{{ stats.documents }}</span>
+        </div>
+      </RouterLink>
+
+      <RouterLink to="/wissenstest" class="stat-card">
+        <div class="stat-icon wissenstest-icon">🧠</div>
+        <div class="stat-info">
+          <span class="stat-label">Wissenstest Fragen</span>
+          <span v-if="isLoading" class="stat-value loading">...</span>
+          <span v-else class="stat-value">{{ stats.wissenstest ?? 0 }}</span>
         </div>
       </RouterLink>
     </div>
